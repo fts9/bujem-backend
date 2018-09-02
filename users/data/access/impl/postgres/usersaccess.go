@@ -77,7 +77,7 @@ func (dao UsersAccessPostgres) FindById(id int) (model.User, error) {
 		return model.User{}, err
 	}
 
-	return row, err
+	return row, nil
 }
 
 func (dao UsersAccessPostgres) DeleteById(id int) error {
