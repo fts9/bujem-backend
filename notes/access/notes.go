@@ -6,6 +6,6 @@ import "bujem/notes/model"
 type Notes interface {
 	Create(note *model.Note) error
 	Update(note *model.Note) error
-	FindByID(id int) (model.Note, error)
-	DeleteByID(id int) error
+	FindByID(id int64) (model.Note, error)
+	DeleteByID(id int64) error
 }

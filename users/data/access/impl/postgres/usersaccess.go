@@ -97,5 +97,5 @@ func (dao UsersAccessPostgres) DeleteById(id int) error {
 }
 
 func getConnection() (*sql.DB, error) {
-	return sql.Open("postgres", "postgres://postgres:postgres@localhost/bujem?sslmode=disable")
+	return sql.Open("postgres", "postgres://postgres:postgres@raspberrypi/bujem?sslmode=disable")
 }

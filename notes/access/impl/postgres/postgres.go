@@ -1,9 +1,11 @@
-package impl
+package postgres
 
 import (
 	"bujem/notes/model"
 	"database/sql"
 	"fmt"
+
+	_ "github.com/lib/pq"
 )
 
 // NotesPostgres implements data access for notes on a PostgreSQL database
@@ -14,14 +16,12 @@ func (dao NotesPostgres) Create(note *model.Note) error {
 	db := getConnection()
 	defer db.Close()
 
-	result, err := db.Exec("insert into notes (note_type, note_content, created, owner_user_id) VALUES ($1, $2, now()::timestamp, $4)", note.NoteType, note.NoteContent, note.OwnerUserID)
+	var id int64
+	err := db.QueryRow("insert into notes (note_type, note_content, created, modified, owner_user_id) VALUES ($1, $2, now()::timestamp, now()::timestamp, $3) RETURNING id", note.NoteType, note.NoteContent, note.OwnerUserID).Scan(&id)
 	if err != nil {
 		return err
 	}
-	note.ID, err = result.LastInsertId()
-	if err != nil {
-		return err
-	}
+	note.ID = id
 	return nil
 }
 
@@ -34,7 +34,7 @@ func (dao NotesPostgres) Update(note *model.Note) error {
 	if err != nil {
 		return err
 	}
-	return nil
+	return err
 }
 
 // FindByID locates and returns an existing note record using its database ID value
@@ -42,7 +42,7 @@ func (dao NotesPostgres) FindByID(id int64) (model.Note, error) {
 	db := getConnection()
 	defer db.Close()
 
-	results, err := db.Query("select id, note_type, note_content, created, modified, owner_user_id where id=$1", id)
+	results, err := db.Query("select id, note_type, note_content, created, modified, owner_user_id from notes where id=$1", id)
 	if err != nil {
 		return model.Note{}, err
 	}

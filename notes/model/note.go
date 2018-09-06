@@ -1,6 +1,8 @@
 package model
 
-import "time"
+import (
+	"time"
+)
 
 // Note is a model representing a single user entered note
 type Note struct {
