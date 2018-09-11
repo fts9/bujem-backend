@@ -10,25 +10,27 @@ import (
 var notesAccess access.Notes
 
 // Create saves a new Note record to the DB
-func Create(note *model.Note) error {
+func Create(note *model.Note) (model.Note, error) {
 	log.Printf("Creating new note record for user: %d", note.OwnerUserID)
 	initializeAccess()
 	err := notesAccess.Create(note)
 	if err != nil {
 		log.Printf("Failed to create note record for user: %d", note.OwnerUserID)
+		return model.Note{}, err
 	}
-	return err
+	return notesAccess.FindByID(note.ID)
 }
 
 // Update updates an existing Note record on the DB
-func Update(note *model.Note) error {
+func Update(note *model.Note) (model.Note, error) {
 	log.Printf("Updating note with ID: %d", note.ID)
 	initializeAccess()
 	err := notesAccess.Update(note)
 	if err != nil {
 		log.Printf("Failed to update note record with ID: %d", note.ID)
+		return model.Note{}, err
 	}
-	return err
+	return notesAccess.FindByID(note.ID)
 }
 
 // FindByID retrieves a note with the given ID from the DB
@@ -55,7 +57,7 @@ func DeleteByID(id int64) error {
 
 func initializeAccess() {
 	if notesAccess == nil {
-		log.Println("Initialising application service data access")
+		log.Println("Initializing application service data access")
 		notesAccess = utility.GetDataAccess("postgres")
 	}
 }

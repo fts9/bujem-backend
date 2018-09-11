@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"bujem/common/utility"
 	"bujem/notes/application"
 	"bujem/notes/model"
 	"encoding/json"
@@ -10,6 +11,8 @@ import (
 
 	"github.com/gorilla/mux"
 )
+
+const entity = "Note"
 
 // Listen intialises the router and begins listening for requests on the designated port
 func Listen() {
@@ -37,13 +40,13 @@ func HandleCreateNote(response http.ResponseWriter, request *http.Request) {
 	var note model.Note
 	err := json.NewDecoder(request.Body).Decode(&note)
 	if err != nil {
-		handleBadRequest(err, response)
+		utility.HandleBadRequest(err, response)
 		return
 	}
 
-	err = application.Create(&note)
+	note, err = application.Create(&note)
 	if err != nil {
-		handleInternalError("create", err, response)
+		utility.HandleInternalError(entity, utility.OperationCreate, err, response)
 		return
 	}
 
@@ -55,13 +58,13 @@ func HandleUpdateNote(response http.ResponseWriter, request *http.Request) {
 	var note model.Note
 	err := json.NewDecoder(request.Body).Decode(&note)
 	if err != nil {
-		handleBadRequest(err, response)
+		utility.HandleBadRequest(err, response)
 		return
 	}
 
-	err = application.Update(&note)
+	note, err = application.Update(&note)
 	if err != nil {
-		handleInternalError("update", err, response)
+		utility.HandleInternalError(entity, utility.OperationUpdate, err, response)
 		return
 	}
 
@@ -73,13 +76,13 @@ func HandleFindNoteByID(response http.ResponseWriter, request *http.Request) {
 	params := mux.Vars(request)
 	id, err := strconv.ParseInt(params["id"], 10, 64)
 	if err != nil {
-		handleBadRequest(err, response)
+		utility.HandleBadRequest(err, response)
 		return
 	}
 
 	note, err := application.FindByID(id)
 	if err != nil {
-		handleInternalError("get", err, response)
+		utility.HandleInternalError(entity, utility.OperationGet, err, response)
 		return
 	}
 
@@ -91,26 +94,14 @@ func HandleDeleteNoteByID(response http.ResponseWriter, request *http.Request) {
 	params := mux.Vars(request)
 	id, err := strconv.ParseInt(params["id"], 10, 64)
 	if err != nil {
-		handleBadRequest(err, response)
+		utility.HandleBadRequest(err, response)
 		return
 	}
 
 	err = application.DeleteByID(id)
 	if err != nil {
-		handleInternalError("delete", err, response)
+		utility.HandleInternalError(entity, utility.OperationDelete, err, response)
 		return
 	}
 	response.WriteHeader(http.StatusNoContent)
-}
-
-func handleBadRequest(err error, response http.ResponseWriter) {
-	log.Println("Could not decode request:")
-	log.Println(err)
-	response.WriteHeader(http.StatusBadRequest)
-}
-
-func handleInternalError(operation string, err error, response http.ResponseWriter) {
-	log.Printf("An error occurred trying to %s a Note record:", operation)
-	log.Println(err)
-	response.WriteHeader(http.StatusServiceUnavailable)
 }

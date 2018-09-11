@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	_ "github.com/lib/pq"
+	_ "github.com/lib/pq" // DB driver so is imported anonymously
 )
 
 // NotesPostgres implements data access for notes on a PostgreSQL database
@@ -17,6 +17,7 @@ func (dao NotesPostgres) Create(note *model.Note) error {
 	defer db.Close()
 
 	var id int64
+	// PostgreSQL doesn't support retrieving the last inserted ID from metadata so QueryRow and Scan act as a work around for this
 	err := db.QueryRow("insert into notes (note_type, note_content, created, modified, owner_user_id) VALUES ($1, $2, now()::timestamp, now()::timestamp, $3) RETURNING id", note.NoteType, note.NoteContent, note.OwnerUserID).Scan(&id)
 	if err != nil {
 		return err
@@ -55,7 +56,8 @@ func (dao NotesPostgres) FindByID(id int64) (model.Note, error) {
 	err = results.Scan(&note.ID, &note.NoteType, &note.NoteContent, &note.Created, &note.Modified, &note.OwnerUserID)
 	if err != nil {
 		return model.Note{}, err
-	} else if results.Err() != nil {
+	}
+	if results.Err() != nil {
 		return model.Note{}, results.Err()
 	}
 	return note, nil
@@ -74,7 +76,7 @@ func (dao NotesPostgres) DeleteByID(id int64) error {
 }
 
 func getConnection() *sql.DB {
-	db, err := sql.Open("postgres", "postgres://postgres:postgres@raspberrypi/bujem?sslmode=disable")
+	db, err := sql.Open("postgres", "postgres://postgres:postgres@localhost/bujem?sslmode=disable")
 	if err != nil {
 		panic(err)
 	}
