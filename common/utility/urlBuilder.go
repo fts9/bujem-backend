@@ -33,17 +33,19 @@ type urlBuilder struct {
 	queryParams map[string]string
 }
 
-func (builder *urlBuilder) NewURL(baseURL string) URLBuilder {
+func NewURL(baseURL string) URLBuilder {
 	var domainValue string
 	if !urlSpecifiesProtocol(baseURL) {
 		domainValue = defaultProtocol
 	}
 
-	builder.domain = baseURL
-	builder.protocol = domainValue
-	builder.pathParams = make(map[string]string)
-	builder.queryParams = make(map[string]string)
-	return builder
+	return &urlBuilder{
+		protocol:    domainValue,
+		domain:      baseURL,
+		version:     "",
+		endPoint:    "",
+		pathParams:  make(map[string]string),
+		queryParams: make(map[string]string)}
 }
 
 func (builder *urlBuilder) Version(version string) URLBuilder {
