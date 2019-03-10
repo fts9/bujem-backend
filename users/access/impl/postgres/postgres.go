@@ -1,6 +1,7 @@
 package postgres
 
 import (
+	"bujem/common/utility/sqlbuilder"
 	"bujem/users/model"
 	"database/sql"
 	"fmt"
@@ -52,6 +53,7 @@ func (dao UsersAccessPostgres) Update(user *model.User) error {
 
 // FindByID retrieves a user record by looking up the given ID
 func (dao UsersAccessPostgres) FindByID(ID int64) (model.User, error) {
+	selectQuery, err := sqlbuilder.NewSelectQueryWithLogging(true).Columns("username", "email", "password").Table("", "users").Where("id").Build()
 	db, err := getConnection()
 
 	if err != nil {
@@ -60,7 +62,7 @@ func (dao UsersAccessPostgres) FindByID(ID int64) (model.User, error) {
 
 	defer db.Close()
 
-	rows, err := db.Query("select id, username, email, password, created, modified from users where id = $1", ID)
+	rows, err := db.Query(selectQuery, ID)
 
 	if err != nil {
 		log.Fatal(err)

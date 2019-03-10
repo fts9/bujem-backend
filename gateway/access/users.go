@@ -15,8 +15,17 @@ const (
 	userIDPathParameter              = "id"
 )
 
-func CreateUser(user map[string]*json.RawMessage) {
-
+func CreateUser(user map[string]*json.RawMessage) map[string]*json.RawMessage {
+	response, err := http.Post(getCreateUserURL(), ContentTypeJSON, json.Marshal(user))
+	if err != nil {
+		return nil;
+	}
+	defer response.Close
+	err = json.Unmarshal(response.Body, user)
+	if err != nil {
+		return nil;
+	}
+	return user;
 }
 
 func getCreateUserURL() string {
