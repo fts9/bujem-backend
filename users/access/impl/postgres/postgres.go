@@ -53,7 +53,7 @@ func (dao UsersAccessPostgres) Update(user *model.User) error {
 
 // FindByID retrieves a user record by looking up the given ID
 func (dao UsersAccessPostgres) FindByID(ID int64) (model.User, error) {
-	selectQuery, err := sqlbuilder.NewSelectQueryWithLogging(true).Columns("username", "email", "password").Table("", "users").Where("id").Build()
+	selectQuery, err := sqlbuilder.NewSelectQueryWithLogging(true).Columns("*").Table("", "users").Where("id").Build()
 	db, err := getConnection()
 
 	if err != nil {

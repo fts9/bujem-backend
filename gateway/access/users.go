@@ -2,7 +2,9 @@ package access
 
 import (
 	"bujem/common/utility"
+	"bytes"
 	"encoding/json"
+	"io/ioutil"
 	"net/http"
 	"strconv"
 	"time"
@@ -16,16 +18,18 @@ const (
 )
 
 func CreateUser(user map[string]*json.RawMessage) map[string]*json.RawMessage {
-	response, err := http.Post(getCreateUserURL(), ContentTypeJSON, json.Marshal(user))
+	jsonString, err := json.Marshal(user)
+	response, err := http.Post(getCreateUserURL(), ContentTypeJSON, bytes.NewBuffer(jsonString))
 	if err != nil {
-		return nil;
+		return nil
 	}
-	defer response.Close
-	err = json.Unmarshal(response.Body, user)
+	defer response.Body.Close()
+	bodyContent, err := ioutil.ReadAll(response.Body)
+	err = json.Unmarshal(bodyContent, user)
 	if err != nil {
-		return nil;
+		return nil
 	}
-	return user;
+	return user
 }
 
 func getCreateUserURL() string {
